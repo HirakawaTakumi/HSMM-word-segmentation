@@ -5,6 +5,7 @@ import math
 import time
 import codecs
 import os
+import sys
 
 
 class HSMMWordSegm():
@@ -288,8 +289,12 @@ class HSMMWordSegm():
 
 
 def main():
+    #入力をコマンドラインからに変更
+    args = sys.argv
+    input_file = args[1]
+
     segm = HSMMWordSegm( 3 )
-    segm.load_data( "data.txt" )
+    segm.load_data(input_file)
     segm.print_result()
 
     for it in range(100):
