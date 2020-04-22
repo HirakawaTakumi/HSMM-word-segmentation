@@ -1,4 +1,3 @@
-# encoding: utf8
 #from __future__ import unicode_literals
 import numpy
 import random
@@ -29,7 +28,7 @@ class HSMMWordSegm():
         self.num_words = [0]*self.num_class
         self.segm_sentences = []
         self.word_count = [ {} for i in range(self.num_class) ]
-        self.sentences = [ line.replace("\n","").replace("\r", "") for line in codecs.open( filename, "r" , "sjis" ).readlines()]
+        self.sentences = [ line.replace("\n","").replace("\r", "") for line in codecs.open( filename, "r" , "utf-8" ).readlines()]
         self.prob_char = {}
 
         for sentence in self.sentences:
@@ -71,8 +70,8 @@ class HSMMWordSegm():
 
         for words in self.segm_sentences:
             for w in words:
-                print w,
-            print
+                print (w),
+            print()
 
 
     def calc_output_prob(self, c , w ):
@@ -180,7 +179,7 @@ class HSMMWordSegm():
                 # BOS
                 c = self.word_class[ id(words[0]) ]
                 self.trans_prob_bos[c] += 1
-            except KeyError,e:
+            except KeyError:
                 # gibss samplingで除かれているものは無視
                 continue
 
@@ -201,22 +200,22 @@ class HSMMWordSegm():
 
 
     def print_result(self):
-        print "-------------------------------"
+        print ("-------------------------------")
         for words in self.segm_sentences:
             for w in words:
-                print w,"|",
-            print
+                print (w,"|")
+            print()
 
         num_voca = 0
         for c in range(self.num_class):
             num_voca += len(self.word_count[c])
 
-        print num_voca
+        print(num_voca)
 
     def delete_words(self):
         self.num_vocab = numpy.zeros( self.num_class )
         for c in range(self.num_class):
-            for w,num in self.word_count[c].items():
+            for w,num in list(self.word_count[c].items()):
                 self.num_vocab[c] += 1
                 if num==0:
                     self.word_count[c].pop( w )
@@ -268,13 +267,13 @@ class HSMMWordSegm():
 
         for c in range(self.num_class):
             path = os.path.join( dir , "word_count_%03d.txt" %c )
-            f = codecs.open( path, "w" , "sjis" )
+            f = codecs.open( path, "w" , "utf-8" )
             for w,num in self.word_count[c].items():
                 f.write( "%s\t%d\n" % (w,num) )
             f.close()
 
         path = os.path.join( dir , "result.txt" )
-        f = codecs.open( path ,  "w" , "sjis" )
+        f = codecs.open( path ,  "w" , "utf-8" )
         for words in self.segm_sentences:
             for w in words:
                 f.write( w )
@@ -294,17 +293,13 @@ def main():
     segm.print_result()
 
     for it in range(100):
-        print it
+        print(it)
         segm.learn()
-        print segm.num_vocab
+        print( segm.num_vocab )
 
     segm.learn( True )
     segm.save_result("result")
     return
-
-
-
-
 
 
 if __name__ == '__main__':
