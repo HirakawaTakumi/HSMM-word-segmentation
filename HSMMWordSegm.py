@@ -1,5 +1,5 @@
 #from __future__ import unicode_literals
-import numpy
+import numpy as np
 import random
 import math
 import time
@@ -10,19 +10,19 @@ import sys
 
 class HSMMWordSegm():
     MAX_LEN = 8
-    AVE_LEN = 2
+    AVE_LEN = 3
 
     def __init__(self, nclass):
         self.num_class = nclass
         self.word_class = {}
         self.segm_sentences = []
-        self.trans_prob = numpy.ones( (nclass,nclass) )
-        self.trans_prob_bos = numpy.ones( nclass )
-        self.trans_prob_eos = numpy.ones( nclass )
+        self.trans_prob = np.ones( (nclass,nclass) )
+        self.trans_prob_bos = np.ones( nclass )
+        self.trans_prob_eos = np.ones( nclass )
         self.word_count = [ {} for i in range(nclass) ]
         self.num_words = []
         self.prob_char = {}
-        self.num_vocab = numpy.zeros( self.num_class )
+        self.num_vocab = np.zeros( self.num_class )
 
     def load_data(self, filename ):
         self.word_count = {}
@@ -92,7 +92,7 @@ class HSMMWordSegm():
 
     def forward_filtering(self, sentence ):
         T = len(sentence)
-        a = numpy.zeros( (len(sentence), self.MAX_LEN, self.num_class) )                            # 前向き確率
+        a = np.zeros( (len(sentence), self.MAX_LEN, self.num_class) )                            # 前向き確率
 
         for t in range(T):
             for k in range(self.MAX_LEN):
@@ -117,7 +117,7 @@ class HSMMWordSegm():
                     if t==T-1:
                         a[t,k,c] *= self.trans_prob_eos[c]
 
-
+            print("a[]={}".format(a[t,k,c]))
 
         return a
 
@@ -143,12 +143,12 @@ class HSMMWordSegm():
 
             # 状態cへ遷移する確率
             if c==-1:
-                trans = numpy.ones( self.num_class )
+                trans = np.ones( self.num_class )
             else:
                 trans = self.trans_prob[:,c]
 
             if use_max_path:
-                idx = numpy.argmax( (a[t]*trans).reshape( self.MAX_LEN*self.num_class ) )
+                idx = np.argmax( (a[t]*trans).reshape( self.MAX_LEN*self.num_class ) )
             else:
                 idx = self.sample_idx( (a[t]*trans).reshape( self.MAX_LEN*self.num_class ) )
 
@@ -170,9 +170,9 @@ class HSMMWordSegm():
 
 
     def calc_trans_prob( self ):
-        self.trans_prob = numpy.zeros( (self.num_class,self.num_class) ) + 0.1
-        self.trans_prob_bos = numpy.zeros( self.num_class ) + 0.1
-        self.trans_prob_eos = numpy.zeros( self.num_class ) + 0.1
+        self.trans_prob = np.zeros( (self.num_class,self.num_class) ) + 0.1
+        self.trans_prob_bos = np.zeros( self.num_class ) + 0.1
+        self.trans_prob_eos = np.zeros( self.num_class ) + 0.1
 
         # 数え上げる
         for n,words in enumerate(self.segm_sentences):
@@ -204,7 +204,7 @@ class HSMMWordSegm():
         print ("-------------------------------")
         for words in self.segm_sentences:
             for w in words:
-                print (w,"|")
+                print(w,"|")
             print()
 
         num_voca = 0
@@ -214,7 +214,7 @@ class HSMMWordSegm():
         print(num_voca)
 
     def delete_words(self):
-        self.num_vocab = numpy.zeros( self.num_class )
+        self.num_vocab = np.zeros( self.num_class )
         for c in range(self.num_class):
             for w,num in list(self.word_count[c].items()):
                 self.num_vocab[c] += 1
@@ -227,7 +227,8 @@ class HSMMWordSegm():
         for i in range(len(self.sentences)):
             sentence = self.sentences[i]
             words = self.segm_sentences[i]
-
+            #print(words)
+            #print(self.word_class)
             # 学習データから削除
             for w in words:
                 c = self.word_class[id(w)]
@@ -283,9 +284,9 @@ class HSMMWordSegm():
             f.write("\n")
         f.close()
 
-        numpy.savetxt( os.path.join(dir,"trans.txt") , self.trans_prob , delimiter="\t" )
-        numpy.savetxt( os.path.join(dir,"trans_bos.txt") , self.trans_prob_bos , delimiter="\t" )
-        numpy.savetxt( os.path.join(dir,"trans_eos.txt") , self.trans_prob_eos , delimiter="\t" )
+        np.savetxt( os.path.join(dir,"trans.txt") , self.trans_prob , delimiter="\t" )
+        np.savetxt( os.path.join(dir,"trans_bos.txt") , self.trans_prob_bos , delimiter="\t" )
+        np.savetxt( os.path.join(dir,"trans_eos.txt") , self.trans_prob_eos , delimiter="\t" )
 
 
 def main():
@@ -303,7 +304,7 @@ def main():
         print( segm.num_vocab )
 
     segm.learn( True )
-    segm.save_result("result")
+    segm.save_result("result2")
     return
 
 
