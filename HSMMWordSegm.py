@@ -231,6 +231,7 @@ class HSMMWordSegm():
             #print(self.word_class)
             # 学習データから削除
             for w in words:
+                print(len(self.word_class))
                 c = self.word_class[id(w)]
                 self.word_class.pop( id(w) )
                 self.word_count[c][w] -= 1
