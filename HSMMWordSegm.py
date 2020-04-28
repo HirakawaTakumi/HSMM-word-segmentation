@@ -11,6 +11,7 @@ import sys
 class HSMMWordSegm():
     MAX_LEN = 8
     AVE_LEN = 3
+    MIN_LEN = 2
 
     def __init__(self, nclass):
         self.num_class = nclass
@@ -38,7 +39,7 @@ class HSMMWordSegm():
             i = 0
             while i<len(sentence):
                 # ランダムに切る
-                length = random.randint(1,self.MAX_LEN)
+                length = random.randint(self.MIN_LEN,self.MAX_LEN)
 
                 if i+length>=len(sentence):
                     length = len(sentence)-i
@@ -95,7 +96,7 @@ class HSMMWordSegm():
         a = np.zeros( (len(sentence), self.MAX_LEN, self.num_class) )                            # 前向き確率
 
         for t in range(T):
-            for k in range(self.MAX_LEN):
+            for k in range(self.MIN_LEN,self.MAX_LEN):
                 if t-k<0:
                     break
 
@@ -116,8 +117,6 @@ class HSMMWordSegm():
                     # 最後の単語の場合
                     if t==T-1:
                         a[t,k,c] *= self.trans_prob_eos[c]
-
-            print("a[]={}".format(a[t,k,c]))
 
         return a
 
@@ -292,8 +291,11 @@ class HSMMWordSegm():
 
 def main():
     #入力をコマンドラインからに変更
+    # input_file →　学習させるデータ(txtを直接指定)
+    # result_dir → 学習結果を格納するファイル(ディレクトリを指定)
     args = sys.argv
     input_file = args[1]
+    result_dir = args[2]
 
     segm = HSMMWordSegm( 3 )
     segm.load_data(input_file)
@@ -304,8 +306,8 @@ def main():
         segm.learn()
         print( segm.num_vocab )
 
-    segm.learn( True )
-    segm.save_result("result2")
+    segm.learn()
+    segm.save_result(result_dir)
     return
 
 
