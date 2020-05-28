@@ -1,4 +1,3 @@
-#from __future__ import unicode_literals
 import numpy as np
 import random
 import math
@@ -6,11 +5,11 @@ import time
 import codecs
 import os
 import sys
-
+import matplotlib.pyplot as plt
 
 class HSMMWordSegm():
-    MAX_LEN = 8
-    AVE_LEN = 3
+    MAX_LEN = 6
+    AVE_LEN = 4
     MIN_LEN = 2
 
     def __init__(self, nclass):
@@ -183,7 +182,7 @@ class HSMMWordSegm():
                 # gibss samplingで除かれているものは無視
                 continue
 
-            for i in range(1,len(words)):
+            for i in range(self.MIN_LEN,len(words)):
                 cc = self.word_class[ id(words[i-1]) ]
                 c = self.word_class[ id(words[i]) ]
 
@@ -226,8 +225,6 @@ class HSMMWordSegm():
         for i in range(len(self.sentences)):
             sentence = self.sentences[i]
             words = self.segm_sentences[i]
-            #print(words)
-            #print(self.word_class)
             # 学習データから削除
             for w in words:
                 print(len(self.word_class))
@@ -287,6 +284,46 @@ class HSMMWordSegm():
         np.savetxt( os.path.join(dir,"trans.txt") , self.trans_prob , delimiter="\t" )
         np.savetxt( os.path.join(dir,"trans_bos.txt") , self.trans_prob_bos , delimiter="\t" )
         np.savetxt( os.path.join(dir,"trans_eos.txt") , self.trans_prob_eos , delimiter="\t" )
+    
+    def plot_result(self, save_dir):
+        '''
+        入力がクラス系列のみ(ex: 444111...)対応,文字は×
+        '''
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+
+        # HSMM＆GP-HSMMのクラス系列の取得
+        for num_sequence, sequence in enumerate(self.segm_sentences):
+            hsmm_class = []
+            # GP-HSMMのクラス系列の取得
+            class_sequence = ''.join(sequence)
+            gphsmm_class_str = list(class_sequence)
+            gphsmm_class = [int(gp_cls) for gp_cls in gphsmm_class_str]
+            print(gphsmm_class)
+            print(len(gphsmm_class))
+            # HSMM 
+            for segm in sequence:
+                # print(self.word_class[id(segm)])
+                segm_class = self.word_class[id(segm)]
+                hsmm_class.extend([segm_class]*len(segm))
+            print(hsmm_class)
+            print(len(hsmm_class))
+
+            # 上下でプロット
+            class_state = np.arange(self.num_class)
+            hsmm_class = np.array(hsmm_class)
+            hsmm_class_x = np.arange(len(hsmm_class))
+            hsmm_range = np.c_[hsmm_class_x[:-1],np.diff(hsmm_class_x)]
+            colors = ['r','b','g']
+
+            plt.figure()
+            plt.subplot(211)
+            plt.plot(range(len(gphsmm_class)),gphsmm_class)
+            plt.subplot(212)
+            for i,color in zip(class_state,colors):
+                plt.broken_barh(hsmm_range[hsmm_class[:-1]==i,:],(0,1),facecolors = color)
+            plt.savefig(save_dir+'class_segm%03d.png'%num_sequence)
+        
 
 
 def main():
@@ -301,12 +338,10 @@ def main():
     segm.load_data(input_file)
     segm.print_result()
 
-    for it in range(100):
-        print(it)
+    for _ in range(100):
         segm.learn()
         print( segm.num_vocab )
 
-    segm.learn()
     segm.save_result(result_dir)
     return
 
