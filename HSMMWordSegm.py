@@ -295,13 +295,13 @@ class HSMMWordSegm():
         # HSMM＆GP-HSMMのクラス系列の取得
         for num_sequence, sequence in enumerate(self.segm_sentences):
             hsmm_class = []
-            # GP-HSMMのクラス系列の取得
+            # 下位のクラス系列の取得
             class_sequence = ''.join(sequence)
             gphsmm_class_str = list(class_sequence)
             gphsmm_class = [int(gp_cls) for gp_cls in gphsmm_class_str]
             print(gphsmm_class)
             print(len(gphsmm_class))
-            # HSMM 
+            # この階層のHSMMのクラス系列の取得 
             for segm in sequence:
                 # print(self.word_class[id(segm)])
                 segm_class = self.word_class[id(segm)]
